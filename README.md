@@ -15,7 +15,7 @@ A pervasive class of models for weather and meteorology data are **Gaussian Proc
 ### Challenges:
 
 - **Model Selection:** Determination of the right kernel and hyperparameters is key for GP performance.
-- **Large Scale Learning:** As the number of observations increases, the computational cost of GPs grows exponentially. The posterior complexity is O(n^3). 
+- **Large Scale Learning:** As the number of observations increases, the computational cost of GPs grows exponentially. The posterior complexity is \(O(n^3)\).
 - **Asymmetric Cost:** Cost-sensitive learning is implemented with a loss function that treats different types of errors differently:
 
 \[
@@ -28,12 +28,19 @@ A pervasive class of models for weather and meteorology data are **Gaussian Proc
 \]
 
 ## Approach and Results
-For the model selection challenge, I decided to use a custom kernel made of a combination of matern kernel, sinusoidal kernel and RBF kernel. 
-Regarding the large scale learning issue, I decided to first fit a gaussian mixture model on the data, using 25 kernels. Then, instead of fitting a single gaussian process on all the points, I decicded to fit one gaussian process per kernel, hence dividing traning time by 25*25. For the predictions, I then tried to use something similar to soft GMM, by averaging predictions of each indivudal gaussian process based on appartenance probability. However, a "hard" GMM worked better, where I would just take the prediction of the GP associated to the closest cluster.  
-Finally, for the asymetric cost, to make a prediction for point x, Finally, for the asymmetric cost, to make a prediction for point \(x\), I followed the approach of minimizing the expected squared loss as described below:
+For the model selection challenge, I decided to use a custom kernel made of a combination of Matern kernel, sinusoidal kernel, and RBF kernel. 
 
+Regarding the large-scale learning issue, I decided to first fit a Gaussian mixture model (GMM) on the data, using 25 kernels. Then, instead of fitting a single Gaussian Process (GP) on all the points, I decided to fit one Gaussian Process per kernel, hence dividing the training time by \(25^2\). For the predictions, I tried to use something similar to soft GMM by averaging predictions of each individual Gaussian Process based on cluster membership probability. However, a "hard" GMM worked better, where I would just take the prediction of the GP associated with the closest cluster.
 
-Given the conditional distribution \(P(y \mid x) = \mathcal{N}(y; \mu_{Y|X=x}, \sigma_{Y|X}^2)\), the cost function used was:
+Finally, for the asymmetric cost, to make a prediction for point \(x\), I followed the approach of minimizing the expected squared loss as described below:
+
+Given the conditional distribution:
+
+\[
+P(y \mid x) = \mathcal{N}(y; \mu_{Y|X=x}, \sigma_{Y|X}^2)
+\]
+
+The cost function used was:
 
 \[
 C(y, a) = c_1 \cdot \max(y - a, 0) + c_2 \cdot \max(a - y, 0)
@@ -49,5 +56,4 @@ a^* = \mu_{Y|X=x} + \sigma_{Y|X} \Phi^{-1}\left( \frac{c_1}{c_1 + c_2} \right)
 
 This provides a bias-adjusted prediction, accounting for the asymmetric costs of under- and over-estimating the PM2.5 concentration at each location.
 
-
-With this approach, I was able to reach the hard baseline for predictions cost on test data, achieving an average penalty score of 8.61 when the hard baseline expected a prediction penalty score lower than 21.84. 
+With this approach, I was able to reach the hard baseline for prediction costs on test data, achieving an average penalty score of 8.61, when the hard baseline expected a prediction penalty score lower than 21.84.
